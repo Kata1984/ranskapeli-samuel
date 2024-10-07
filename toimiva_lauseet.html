@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranskan kielen peli - Lauseet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .game-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .summary {
+            margin-top: 20px;
+        }
+
+        #next-btn {
+            display: none;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Ranskan kielen peli</h1>
+        <p id="sentence-display">Tässä näkyy suomenkielinen lause</p>
+        <input type="text" id="answer-input" placeholder="Kirjoita ranskaksi" autocomplete="off">
+        <button onclick="checkAnswer()">Tarkista</button>
+        <div class="feedback" id="feedback"></div>
+        <button id="next-btn" onclick="showNextSentence()">Seuraava</button>
+        <div class="summary" id="summary"></div>
+        <button id="continue-btn" style="display:none;" onclick="continueGame()">Jatka peliä</button>
+    </div>
+
+    <script>
+        const sentences = [
+            { finnish: "ostetaanko mansikoita?", french: "on achète des fraises ?" },
+            { finnish: "kyllä, miksei.", french: "oui, pourquoi pas." },
+            { finnish: "ostetaanko mustikoita?", french: "on achète des myrtilles ?" },
+            { finnish: "Ei, ei nyt.", french: "Non, pas maintenant." },
+            { finnish: "Minulla on nälkä! Mitä ostetaan?", french: "J'ai faim ! Qu'est-ce qu'on achète ?" },
+            { finnish: "Minullakin on nälkä. Haluaisin hedelmäpiirakan.", french: "Moi aussi, j'ai faim. Je voudrais une tartelette aux fruits." },
+            { finnish: "Minä haluaisin eclairin... hmm, kahvin vai suklaan maulla?", french: "Moi, je voudrais un éclair au... hmm, au café ou au chocolat ?" },
+            { finnish: "Suklaalla, totta kai!", french: "Au chocolat, bien sûr !" },
+            { finnish: "Oi, olen janoinen. Onko hedelmämehuja?", french: "Oh, j'ai soif. Il y a des jus de fruits ?" },
+            { finnish: "Totta kai!", french: "Bien sûr !" },
+            { finnish: "Päivää rouva! Sitruunatorttu, olkaa hyvä.", french: "Bonjour madame ! Une tartelette aux citrons, s'il vous plaît." },
+            { finnish: "Yksi suklaaeclair ja ananasmehu, olkaa hyvä.", french: "Un éclair au chocolat et un jus d'ananas, s'il vous plaît." },
+            { finnish: "Ja minulle persikkamehu, olkaa hyvä.", french: "Et pour moi, un jus de pêche, s'il vous plaît." },
+            { finnish: "Tässä, se tekee 9 euroa.", french: "Voilà. Ça fait 9 euros." }
+            // Lisää kaikki 126 lausetta
+        ];
+
+        let correctAnswers = [];
+        let incorrectAnswers = [];
+        let currentSentenceIndex = 0;
+        let sentencesToShow = shuffleArray([...sentences]).slice(0, 20); // Satunnaiset 20 lausetta
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showNextSentence() {
+            if (currentSentenceIndex < sentencesToShow.length) {
+                document.getElementById("sentence-display").innerText = sentencesToShow[currentSentenceIndex].finnish;
+                document.getElementById("answer-input").value = '';
+                document.getElementById("feedback").innerText = '';
+                document.getElementById("next-btn").style.display = 'none'; // Piilota seuraava-painike
+            } else {
+                showSummary();
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById("answer-input").value.trim().toLowerCase();
+            const correctAnswer = sentencesToShow[currentSentenceIndex].french.toLowerCase();
+
+            if (userAnswer === correctAnswer) {
+                document.getElementById("feedback").innerText = "Oikein!";
+                correctAnswers.push(sentencesToShow[currentSentenceIndex]);
+            } else {
+                document.getElementById("feedback").innerText = `Väärin! Oikea vastaus on: ${sentencesToShow[currentSentenceIndex].french}`;
+                incorrectAnswers.push(sentencesToShow[currentSentenceIndex]);
+            }
+
+            currentSentenceIndex++;
+            document.getElementById("next-btn").style.display = 'block'; // Näytä seuraava-painike
+        }
+
+        function showSummary() {
+            let summaryText = "<h2>Yhteenveto</h2>";
+            summaryText += `<p>Oikeat vastaukset: ${correctAnswers.length}</p>`;
+            summaryText += `<p>Väärät vastaukset: ${incorrectAnswers.length}</p>`;
+
+            if (incorrectAnswers.length > 0) {
+                summaryText += "<h3>Harjoitusta kaipaavat lauseet:</h3><ul>";
+                incorrectAnswers.forEach(item => {
+                    summaryText += `<li>${item.finnish} - ${item.french}</li>`;
+                });
+                summaryText += "</ul>";
+            }
+
+            document.getElementById("summary").innerHTML = summaryText;
+            document.getElementById("continue-btn").style.display = 'block'; // Näytä "Jatka peliä" -painike
+        }
+
+        function continueGame() {
+            correctAnswers = [];
+            incorrectAnswers = [];
+            currentSentenceIndex = 0;
+            sentencesToShow = shuffleArray([...sentences]).slice(0, 20); // Uudet satunnaiset lauseet
+            document.getElementById("summary").innerHTML = ''; // Tyhjennä yhteenveto
+            document.getElementById("continue-btn").style.display = 'none'; // Piilota "Jatka peliä" -painike
+            showNextSentence(); // Aloita uusi kierros
+        }
+
+        // Aloita peli ensimmäisellä lauseella
+        showNextSentence();
+    </script>
+</body>
+</html>
